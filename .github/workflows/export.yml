@@ -53,11 +53,12 @@ jobs:
           mysql -uroot -proot --default-character-set=utf8mb4 world < sql/world.sql
 
       - name: Set up PostgreSQL
-        uses: docker://postgres:latest
-        env:
-          POSTGRES_DB: world
-          POSTGRES_USER: root
-          POSTGRES_PASSWORD: root
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '16'
+          postgresql db: world
+          postgresql user: root
+          postgresql password: root
 
       - name: Migrate data to PostgreSQL
         run: |
@@ -80,11 +81,11 @@ jobs:
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world countries > sql/countries.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world states > sql/states.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world cities > sql/cities.sql
-          pg_dump --username root --password root --format plain --verbose --file "psql/regions.sql" --table public.regions world
-          pg_dump --username root --password root --format plain --verbose --file "psql/subregions.sql" --table public.subregions world
-          pg_dump --username root --password root --format plain --verbose --file "psql/countries.sql" --table public.countries world
-          pg_dump --username root --password root --format plain --verbose --file "psql/states.sql" --table public.states world
-          pg_dump --username root --password root --format plain --verbose --file "psql/cities.sql" --table public.cities world
+            pg_dump --username root --password root --format plain --verbose --file "psql/regions.sql" --table public.regions world
+            pg_dump --username root --password root --format plain --verbose --file "psql/subregions.sql" --table public.subregions world
+            pg_dump --username root --password root --format plain --verbose --file "psql/countries.sql" --table public.countries world
+            pg_dump --username root --password root --format plain --verbose --file "psql/states.sql" --table public.states world
+            pg_dump --username root --password root --format plain --verbose --file "psql/cities.sql" --table public.cities world
 
       - name: Get Counts from Database
         run: |
