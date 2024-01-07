@@ -41,6 +41,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pgloader
           sudo apt install postgresql-16 -y
+          sudo apt-get remove mysql-server -y
+          sudo apt-get autoremove -y
+          sudo apt-get install mysql-server-5.7 -y
+          sudo service mysql restart
 
       - name: Cleanup world.sql
         run: |
@@ -51,35 +55,32 @@ jobs:
           echo -e "DROP TABLE IF EXISTS \`states\`;\n$(cat sql/world.sql)" > sql/world.sql
           echo -e "DROP TABLE IF EXISTS \`cities\`;\n$(cat sql/world.sql)" > sql/world.sql
 
-      - name: Setup MySQL
-        uses: shogo82148/actions-setup-mysql@v1
-        with:
-          mysql-version: "5.7"
-          root-password: root
-
-      - name: Setup PostgreSQL
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: '16'
-          postgresql db: world
-          postgresql user: root
-          postgresql password: root
-
-      - name: Import data to MySQL
+      - name: Setup MySQL and PostgreSQL
         run: |
-          ls -R -a
           mysql -V
           mysql -uroot -proot -e "CREATE DATABASE world;"
           mysql -uroot -proot -e "SHOW DATABASES;"
-          mysql -uroot -proot --default-character-set=utf8mb4 world < sql/world.sql
-
-      - name: Migrate data to PostgreSQL and update pg_dump
+          postgres psql -c "CREATE DATABASE world;"
+          postgres psql -c "CREATE USER root WITH PASSWORD 'root';"
+          postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE world TO root;"
+          postgres psql -c "SELECT C"
+      - name: Import data to MySQL and migrate to PostgreSQL
         run: |
+          mysql -uroot -proot --default-character-set=utf8mb4 world < sql/world.sql
           pgloader --version
           pgloader .github/my.load
 
       - name: Composer Dependencies
         run: cd scripts/vendor && composer install
+
+      - name: Get Counts from Database
+        run: |
+          region_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.regions;" -s)
+          subregion_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.subregions;" -s)
+          country_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.countries;" -s)
+          state_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.states;" -s)
+          city_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.cities;" -s)
+          current_date=$(date +"%dth %b %Y")
 
       - name: Run Export Scripts
         run: |
@@ -92,21 +93,12 @@ jobs:
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world countries > sql/countries.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world states > sql/states.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world cities > sql/cities.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.regions > psql/regions.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.subregions > psql/subregions.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.countries > psql/countries.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.states > psql/states.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.cities > psql/cities.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.regions -t public.subregions -t public.countries -t public.states -t public.cities > psql/world.sql
-
-      - name: Get Counts from Database
-        run: |
-          region_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.regions;" -s)
-          subregion_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.subregions;" -s)
-          country_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.countries;" -s)
-          state_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.states;" -s)
-          city_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.cities;" -s)
-          current_date=$(date +"%dth %b %Y")
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-inserts=$region_count -t public.regions > psql/regions.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-inserts=$subregion_count -t public.subregions > psql/subregions.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-inserts=$country_count -t public.countries > psql/countries.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-inserts=$state_count -t public.states > psql/states.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-inserts=$city_count -t public.cities > psql/cities.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean -t --rows-per-inserts=10000 public.regions -t public.subregions -t public.countries -t public.states -t public.cities > psql/world.sql
 
       - name: Update README.md
         run: |
