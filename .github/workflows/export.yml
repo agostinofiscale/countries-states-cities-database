@@ -73,21 +73,21 @@ jobs:
           pgloader .github/my.load
 
       - name: Setup variables
+        id: setup-vars
         run: |
-          region_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.regions;" -s)
-          subregion_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.subregions;" -s)
-          country_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.countries;" -s)
-          state_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.states;" -s)
-          city_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.cities;" -s)
-          current_date=$(date +"%dth %b %Y")
+          echo "::set-env name=REGION_COUNT::$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.regions;' -s)"
+          echo "::set-env name=SUBREGION_COUNT::$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.subregions;' -s)"
+          echo "::set-env name=COUNTRY_COUNT::$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.countries;' -s)"
+          echo "::set-env name=STATE_COUNT::$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.states;' -s)"
+          echo "::set-env name=CITY_COUNT::$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.cities;' -s)"
+          echo "::set-env name=CURRENT_DATE::$(date +'%dth %b %Y')"
 
-      
       - name: Composer Dependencies
         run: cd scripts/vendor && composer install
 
       - name: Run Export Scripts
         run: |
-          echo "$region_count"
+          echo "$REGION_COUNT"
           php scripts/export.php
           php scripts/export_xml.php
           php scripts/export_yaml.php
@@ -97,20 +97,20 @@ jobs:
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world countries > sql/countries.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world states > sql/states.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world cities > sql/cities.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((region_count + 0)) -t public.regions > psql/regions.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((subregion_count + 0)) -t public.subregions > psql/subregions.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((country_count + 0)) -t public.countries > psql/countries.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((state_count + 0)) -t public.states > psql/states.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((city_count + 0)) -t public.cities > psql/cities.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((REGION_COUNT + 0)) -t public.regions > psql/regions.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((SUBREGION_COUNT + 0)) -t public.subregions > psql/subregions.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((COUNTRY_COUNT + 0)) -t public.countries > psql/countries.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((STATE_COUNT + 0)) -t public.states > psql/states.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $((CITY_COUNT + 0)) -t public.cities > psql/cities.sql
           pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert 10000 -t public.regions -t public.subregions -t public.countries -t public.states -t public.cities > psql/world.sql
 
       - name: Update README.md
         run: |
-          sed -i "s/Total Regions : [0-9]* <br>/Total Regions : $region_count <br>/" README.md
-          sed -i "s/Total Sub Regions : [0-9]* <br>/Total Sub Regions : $subregion_count <br>/" README.md
-          sed -i "s/Total Countries : [0-9]* <br>/Total Countries : $country_count <br>/" README.md
-          sed -i "s/Total States\/Regions\/Municipalities : [0-9]* <br>/Total States\/Regions\/Municipalities : $state_count <br>/" README.md
-          sed -i "s/Total Cities\/Towns\/Districts : [0-9]* <br>/Total Cities\/Towns\/Districts : $city_count <br>/" README.md
+          sed -i "s/Total Regions : [0-9]* <br>/Total Regions : $REGION_COUNT <br>/" README.md
+          sed -i "s/Total Sub Regions : [0-9]* <br>/Total Sub Regions : $SUBREGION_COUNT <br>/" README.md
+          sed -i "s/Total Countries : [0-9]* <br>/Total Countries : $COUNTRY_COUNT <br>/" README.md
+          sed -i "s/Total States\/Regions\/Municipalities : [0-9]* <br>/Total States\/Regions\/Municipalities : $STATE_COUNT <br>/" README.md
+          sed -i "s/Total Cities\/Towns\/Districts : [0-9]* <br>/Total Cities\/Towns\/Districts : $CITY_COUNT <br>/" README.md
           sed -i "s/Last Updated On : .*$/Last Updated On : $current_date/" README.md
 
       - name: Create Pull Request
