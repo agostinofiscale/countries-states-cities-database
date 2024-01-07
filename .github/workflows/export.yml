@@ -65,12 +65,13 @@ jobs:
           mysql -uroot -proot -e "SHOW DATABASES;"
           mysql -uroot -proot --default-character-set=utf8mb4 world < sql/world.sql
 
-      - name: Migrate data to PostgreSQL
+      - name: Migrate data to PostgreSQL and update pg_dump
         run: |
           sudo apt-get update
           sudo apt-get install -y pgloader
           pgloader --version
           pgloader mysql://root:root@localhost/world postgresql://root:root@localhost/world
+          sudo apt install postgresql-client-16 -y
 
       - name: Composer Dependencies
         run: cd scripts/vendor && composer install
