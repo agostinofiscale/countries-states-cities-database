@@ -43,16 +43,11 @@ jobs:
           echo -e "DROP TABLE IF EXISTS \`states\`;\n$(cat sql/world.sql)" > sql/world.sql
           echo -e "DROP TABLE IF EXISTS \`cities\`;\n$(cat sql/world.sql)" > sql/world.sql
 
-      - name: Create & Import DB
+      - name: Set up MySQL
         uses: shogo82148/actions-setup-mysql@v1
         with:
           mysql-version: "5.7"
-      - run: |
-          ls -R
-          mysql -V
-          mysql -uroot -proot -e "CREATE DATABASE world;"
-          mysql -uroot -proot -e "SHOW DATABASES;"
-          mysql -uroot -proot --default-character-set=utf8mb4 world < sql/world.sql
+          root-password: root
 
       - name: Set up PostgreSQL
         uses: harmon758/postgresql-action@v1
@@ -61,6 +56,14 @@ jobs:
           postgresql db: world
           postgresql user: root
           postgresql password: root
+
+      - name: Import data to MySQL
+        run: |
+          ls -R
+          mysql -V
+          mysql -uroot -proot -e "CREATE DATABASE world;"
+          mysql -uroot -proot -e "SHOW DATABASES;"
+          mysql -uroot -proot --default-character-set=utf8mb4 world < sql/world.sql
 
       - name: Migrate data to PostgreSQL
         run: |
