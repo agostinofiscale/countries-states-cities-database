@@ -87,6 +87,7 @@ jobs:
 
       - name: Run Export Scripts
         run: |
+          echo $((region_count + 0))
           php scripts/export.php
           php scripts/export_xml.php
           php scripts/export_yaml.php
