@@ -75,6 +75,9 @@ jobs:
       - name: Setup variables
         run: |
           region_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.regions;" -s)
+          echo "Region count is: ${region_count}"
+          echo "Region count is: $region_count"
+          echo region_count
           subregion_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.subregions;" -s)
           country_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.countries;" -s)
           state_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.states;" -s)
