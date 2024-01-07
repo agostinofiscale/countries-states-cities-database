@@ -27,12 +27,20 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Install PHP
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.0'
           extensions: intl #optional
           ini-values: "post_max_size=256M" #optional
+
+      - name: Setup tools
+        run: |
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get install -y pgloader
+          sudo apt install postgresql-16 -y
 
       - name: Cleanup world.sql
         run: |
@@ -43,13 +51,13 @@ jobs:
           echo -e "DROP TABLE IF EXISTS \`states\`;\n$(cat sql/world.sql)" > sql/world.sql
           echo -e "DROP TABLE IF EXISTS \`cities\`;\n$(cat sql/world.sql)" > sql/world.sql
 
-      - name: Set up MySQL
+      - name: Setup MySQL
         uses: shogo82148/actions-setup-mysql@v1
         with:
           mysql-version: "5.7"
           root-password: root
 
-      - name: Set up PostgreSQL
+      - name: Setup PostgreSQL
         uses: harmon758/postgresql-action@v1
         with:
           postgresql version: '16'
@@ -67,14 +75,8 @@ jobs:
 
       - name: Migrate data to PostgreSQL and update pg_dump
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pgloader
           pgloader --version
-          pgloader mysql://root:root@localhost/world postgresql://root:root@localhost/world
-          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-          sudo apt-get update
-          sudo apt install postgresql-16 -y
+          pgloader .github/workflows/my.load
 
       - name: Composer Dependencies
         run: cd scripts/vendor && composer install
@@ -90,12 +92,12 @@ jobs:
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world countries > sql/countries.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world states > sql/states.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world cities > sql/cities.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.regions > psql/regions.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.subregions > psql/subregions.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.countries > psql/countries.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.states > psql/states.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.cities > psql/cities.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.regions -t world.subregions -t world.countries -t world.states -t world.cities > psql/world.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.regions > psql/regions.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.subregions > psql/subregions.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.countries > psql/countries.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.states > psql/states.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.cities > psql/cities.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp -t public.regions -t public.subregions -t public.countries -t public.states -t public.cities > psql/world.sql
 
       - name: Get Counts from Database
         run: |
