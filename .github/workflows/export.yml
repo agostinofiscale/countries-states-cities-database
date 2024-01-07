@@ -67,6 +67,7 @@ jobs:
 
       - name: Import data to MySQL and migrate to PostgreSQL
         run: |
+          mysql -uroot -proot -e "CREATE DATABASE world;"
           mysql -uroot -proot --default-character-set=utf8mb4 world < sql/world.sql
           pgloader --version
           pgloader .github/my.load
