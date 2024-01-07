@@ -96,11 +96,11 @@ jobs:
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world countries > sql/countries.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world states > sql/states.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world cities > sql/cities.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $region_count -t public.regions > psql/regions.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $subregion_count -t public.subregions > psql/subregions.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $country_count -t public.countries > psql/countries.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $state_count -t public.states > psql/states.sql
-          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert $city_count -t public.cities > psql/cities.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert "$region_count" -t public.regions > psql/regions.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert "$subregion_count" -t public.subregions > psql/subregions.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert "$country_count" -t public.countries > psql/countries.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert "$state_count" -t public.states > psql/states.sql
+          pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert "$city_count" -t public.cities > psql/cities.sql
           pg_dump --dbname=postgresql://root:root@localhost/world -Fp --clean --rows-per-insert 10000 -t public.regions -t public.subregions -t public.countries -t public.states -t public.cities > psql/world.sql
 
       - name: Update README.md
