@@ -44,9 +44,11 @@ jobs:
           echo -e "DROP TABLE IF EXISTS \`cities\`;\n$(cat sql/world.sql)" > sql/world.sql
 
       - name: Create & Import DB
-        run: |
+        uses: shogo82148/actions-setup-mysql@v1
+        with:
+          mysql-version: "5.7"
+      - run: |
           ls -R
-          sudo systemctl start mysql.service
           mysql -V
           mysql -uroot -proot -e "CREATE DATABASE world;"
           mysql -uroot -proot -e "SHOW DATABASES;"
