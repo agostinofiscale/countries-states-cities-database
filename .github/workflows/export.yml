@@ -50,6 +50,7 @@ jobs:
 
       - name: Setup PostgreSQL
         run: |
+          sudo service postgresql start
           psql -c "CREATE DATABASE world;"
           psql -c "CREATE USER root WITH PASSWORD 'root';"
           psql -c "GRANT ALL PRIVILEGES ON DATABASE world TO root;"
