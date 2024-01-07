@@ -74,20 +74,19 @@ jobs:
 
       - name: Setup variables
         run: |
-          region_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.regions;" -s)
-          echo "Region count is: ${region_count}"
-          echo "Region count is: $region_count"
-          echo region_count
-          subregion_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.subregions;" -s)
-          country_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.countries;" -s)
-          state_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.states;" -s)
-          city_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.cities;" -s)
-          current_date=$(date +"%dth %b %Y")
+          echo "region_count=$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.regions;' -s)" >> $GITHUB_ENV
+          echo "subregion_count=$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.subregions;' -s)" >> $GITHUB_ENV
+          echo "country_count=$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.countries;' -s)" >> $GITHUB_ENV
+          echo "state_count=$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.states;' -s)" >> $GITHUB_ENV
+          echo "city_count=$(mysql -uroot -proot -e 'SELECT COUNT(*) FROM world.cities;' -s)" >> $GITHUB_ENV
+          echo "current_date=$(date +'%dth %b %Y')" >> $GITHUB_ENV
 
         
       - name: Update README.md
+        env:
+          region_count: ${{ env.region_count }}
         run: |
-          echo "Region count is: ${region_count}"
+          echo "$region_count"
           sed -i "s/Total Regions : [0-9]* <br>/Total Regions : $region_count <br>/" README.md
           sed -i "s/Total Sub Regions : [0-9]* <br>/Total Sub Regions : $subregion_count <br>/" README.md
           sed -i "s/Total Countries : [0-9]* <br>/Total Countries : $country_count <br>/" README.md
