@@ -50,9 +50,9 @@ jobs:
 
       - name: Setup PostgreSQL
         run: |
-          postgres psql -c "CREATE DATABASE world;"
-          postgres psql -c "CREATE USER root WITH PASSWORD 'root';"
-          postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE world TO root;"
+          psql -c "CREATE DATABASE world;"
+          psql -c "CREATE USER root WITH PASSWORD 'root';"
+          psql -c "GRANT ALL PRIVILEGES ON DATABASE world TO root;"
 
       - name: Cleanup world.sql
         run: |
