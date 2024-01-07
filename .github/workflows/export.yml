@@ -90,12 +90,12 @@ jobs:
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world countries > sql/countries.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world states > sql/states.sql
           mysqldump -uroot -proot --add-drop-table --disable-keys --set-charset --skip-add-locks world cities > sql/cities.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t public.regions > psql/regions.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t public.subregions > psql/subregions.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t public.countries > psql/countries.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t public.states > psql/states.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t public.cities > psql/cities.sql
-          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t public.regions -t public.subregions -t public.countries -t public.states -t public.cities > psql/world.sql
+          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.regions > psql/regions.sql
+          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.subregions > psql/subregions.sql
+          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.countries > psql/countries.sql
+          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.states > psql/states.sql
+          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.cities > psql/cities.sql
+          pg_dump --dbname=postgresql://root:root@localhost:5432/world -Fp -t world.regions -t world.subregions -t world.countries -t world.states -t world.cities > psql/world.sql
 
       - name: Get Counts from Database
         run: |
