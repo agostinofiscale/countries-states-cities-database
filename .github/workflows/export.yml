@@ -76,7 +76,7 @@ jobs:
       - name: Migrate data to PostgreSQL and update pg_dump
         run: |
           pgloader --version
-          pgloader .github/workflows/my.load
+          pgloader .github/my.load
 
       - name: Composer Dependencies
         run: cd scripts/vendor && composer install
