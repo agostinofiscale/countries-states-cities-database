@@ -41,10 +41,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pgloader
           sudo apt install postgresql-16 -y
-          sudo apt-get remove mysql-server -y
-          sudo apt-get autoremove -y
-          sudo apt-get install mysql-server-5.7 -y
-          sudo service mysql restart
       
       - name: Setup MySQL
         uses: shogo82148/actions-setup-mysql@v1
