@@ -49,11 +49,12 @@ jobs:
           root-password: root
 
       - name: Setup PostgreSQL
-        run: |
-          sudo service postgresql start
-          psql -c "CREATE DATABASE world;"
-          psql -c "CREATE USER root WITH PASSWORD 'root';"
-          psql -c "GRANT ALL PRIVILEGES ON DATABASE world TO root;"
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '16'
+          postgresql db: world
+          postgresql user: root
+          postgresql password: root
 
       - name: Cleanup world.sql
         run: |
