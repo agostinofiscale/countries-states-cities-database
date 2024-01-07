@@ -45,6 +45,18 @@ jobs:
           sudo apt-get autoremove -y
           sudo apt-get install mysql-server-5.7 -y
           sudo service mysql restart
+      
+      - name: Setup MySQL
+        uses: shogo82148/actions-setup-mysql@v1
+        with:
+          mysql-version: "5.7"
+          root-password: root
+
+      - name: Setup PostgreSQL
+        run: |
+          postgres psql -c "CREATE DATABASE world;"
+          postgres psql -c "CREATE USER root WITH PASSWORD 'root';"
+          postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE world TO root;"
 
       - name: Cleanup world.sql
         run: |
@@ -55,25 +67,13 @@ jobs:
           echo -e "DROP TABLE IF EXISTS \`states\`;\n$(cat sql/world.sql)" > sql/world.sql
           echo -e "DROP TABLE IF EXISTS \`cities\`;\n$(cat sql/world.sql)" > sql/world.sql
 
-      - name: Setup MySQL and PostgreSQL
-        run: |
-          mysql -V
-          mysql -uroot -proot -e "CREATE DATABASE world;"
-          mysql -uroot -proot -e "SHOW DATABASES;"
-          postgres psql -c "CREATE DATABASE world;"
-          postgres psql -c "CREATE USER root WITH PASSWORD 'root';"
-          postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE world TO root;"
-          postgres psql -c "SELECT C"
       - name: Import data to MySQL and migrate to PostgreSQL
         run: |
           mysql -uroot -proot --default-character-set=utf8mb4 world < sql/world.sql
           pgloader --version
           pgloader .github/my.load
 
-      - name: Composer Dependencies
-        run: cd scripts/vendor && composer install
-
-      - name: Get Counts from Database
+      - name: Setup variables
         run: |
           region_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.regions;" -s)
           subregion_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.subregions;" -s)
@@ -81,6 +81,10 @@ jobs:
           state_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.states;" -s)
           city_count=$(mysql -uroot -proot -e "SELECT COUNT(*) FROM world.cities;" -s)
           current_date=$(date +"%dth %b %Y")
+
+      
+      - name: Composer Dependencies
+        run: cd scripts/vendor && composer install
 
       - name: Run Export Scripts
         run: |
