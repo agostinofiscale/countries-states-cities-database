@@ -67,7 +67,7 @@ jobs:
 
       - name: Import data to MySQL
         run: |
-          ls -R
+          ls -R -a
           mysql -V
           mysql -uroot -proot -e "CREATE DATABASE world;"
           mysql -uroot -proot -e "SHOW DATABASES;"
